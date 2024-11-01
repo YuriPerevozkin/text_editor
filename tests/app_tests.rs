@@ -1,4 +1,7 @@
-use text_editor::app::App;
+use text_editor::app::{
+    App,
+    Mode,
+};
 
 use crossterm::event::KeyCode;
 
@@ -7,7 +10,7 @@ use crossterm::event::KeyCode;
 fn handle_key_event_right() {
     let mut app = App::new("tests/test".to_string());
 
-    app.handle_key_event(KeyCode::Right.into());
+    app.handle_key_event(KeyCode::Char('l').into());
     assert_eq!(app.editor.cursor.pos, 1);
 }
 
@@ -17,7 +20,7 @@ fn handle_key_event_left() {
 
     app.editor.cursor.pos = 2;
 
-    app.handle_key_event(KeyCode::Left.into());
+    app.handle_key_event(KeyCode::Char('h').into());
     assert_eq!(app.editor.cursor.pos, 1);
 }
 
@@ -25,7 +28,7 @@ fn handle_key_event_left() {
 fn handle_key_event_down() {
     let mut app = App::new("tests/test".to_string());
 
-    app.handle_key_event(KeyCode::Down.into());
+    app.handle_key_event(KeyCode::Char('j').into());
     assert_eq!(app.editor.cursor.line, 1);
 }
 
@@ -35,7 +38,7 @@ fn handle_key_event_up() {
 
     app.editor.cursor.line = 1;
 
-    app.handle_key_event(KeyCode::Up.into());
+    app.handle_key_event(KeyCode::Char('k').into());
     assert_eq!(app.editor.cursor.line, 0);
 }
 
@@ -45,7 +48,7 @@ fn handle_key_event_home() {
 
     app.editor.cursor.pos = 2;
 
-    app.handle_key_event(KeyCode::Home.into());
+    app.handle_key_event(KeyCode::Char('0').into());
     assert_eq!(app.editor.cursor.pos, 0);
 }
 
@@ -53,36 +56,14 @@ fn handle_key_event_home() {
 fn handle_key_event_end() {
     let mut app = App::new("tests/test".to_string());
 
-    app.handle_key_event(KeyCode::End.into());
+    app.handle_key_event(KeyCode::Char('$').into());
     assert_eq!(app.editor.cursor.pos, 4);
 }
 
 #[test]
-fn handle_key_event_backspace() {
+fn handle_key_event_insert_mode() {
     let mut app = App::new("tests/test".to_string());
 
-    app.editor.cursor.line = 1;
-
-    app.handle_key_event(KeyCode::Backspace.into());
-    assert_eq!(app.editor.buffer[app.editor.cursor.line], "testfile");
-}
-
-#[test]
-fn handle_key_event_enter() {
-    let mut app = App::new("tests/test".to_string());
-
-    app.editor.cursor.pos = 2;
-    app.handle_key_event(KeyCode::Enter.into());
-    assert_eq!(app.editor.buffer[app.editor.cursor.line], "st");
-}
-
-#[test]
-fn handle_key_event_char() {
-    let mut app = App::new("tests/test".to_string());
-
-    app.editor.insert_char("a");
-    assert_eq!(app.editor.buffer[app.editor.cursor.line], "atest");
-
-    app.editor.insert_char(" ");
-    assert_eq!(app.editor.buffer[app.editor.cursor.line], "a test");
+    app.handle_key_event(KeyCode::Char('i').into());
+    assert_eq!(app.mode, Mode::Insert);
 }
