@@ -12,7 +12,7 @@ pub struct Editor {
     pub file: String,
     pub buffer: Vec<String>,
     pub cursor: Cursor,
-    cursor_cache: usize,
+    pub cursor_cache: usize,
 }
 
 impl Editor {
