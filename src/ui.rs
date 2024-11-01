@@ -1,16 +1,17 @@
 use std::cell::RefCell;
 
 use ratatui::{
-    DefaultTerminal,
     text::Line,
     style::Stylize,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    DefaultTerminal,
     symbols::border,
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
     widgets::{
         block::{Position, Title},
         Block, Paragraph,
     },
 };
+
 use crate::app::{
     App,
     Mode,
@@ -39,6 +40,7 @@ impl<'a> Ui<'a> {
 
     fn draw_editor(&mut self) {
         let title = Title::from(Line::from(self.app.borrow().editor.file.to_string().bold()));
+        let mode = &self.app.borrow().mode;
 
         let instructions = Title::from(Line::from(vec![
             "[Save ".into(),
@@ -46,6 +48,7 @@ impl<'a> Ui<'a> {
             " Exit ".into(),
             "ESC".blue().bold(),
             "]".into(),
+            format!("{}", mode).into(),
         ]));
 
         let block = Block::bordered()
@@ -58,12 +61,13 @@ impl<'a> Ui<'a> {
         let paragraph = Paragraph::new(content)
             .block(block);
 
-        let _ = self.terminal.draw(|f| {
-            f.render_widget(paragraph, f.area()); f.set_cursor_position(ratatui::layout::Position::new(
+        self.terminal.draw(|f| {
+            f.render_widget(paragraph, f.area());
+            f.set_cursor_position(ratatui::layout::Position::new(
                 <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos).unwrap()+1,
                 <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line).unwrap()+1,
-            ))
-        });
+            ));
+        }).unwrap();
     }
 
     pub fn draw_exit_popup(&mut self) {
@@ -86,7 +90,7 @@ impl<'a> Ui<'a> {
             .block(exit_block)
             .alignment(Alignment::Center);
 
-        let _ = self.terminal.draw(|f| {
+        self.terminal.draw(|f| {
             let area = centered_rect(13, 5, f.area());
             f.render_widget(paragraph, area)
         });
