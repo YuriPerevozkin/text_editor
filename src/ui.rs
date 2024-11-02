@@ -1,27 +1,47 @@
 use std::cell::RefCell;
+use std::io::stdout;
 
+use crossterm::{
+    execute,
+    cursor::SetCursorStyle,
+};
 use ratatui::{
+    prelude::*,
     text::Line,
     style::Stylize,
     DefaultTerminal,
     symbols::border,
-    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    layout::{
+        Alignment,
+        Position
+    },
     widgets::{
-        block::{Position, Title},
-        Block, Paragraph,
+        Block,
+        Widget,
+        Paragraph,
+        block::Title,
     },
 };
 
 use crate::app::{
     App,
-    Mode,
+    Mode
 };
 
+
+struct EditorWidget<'a> {
+    title: Title<'a>,
+    content: Vec<String>,
+}
+
+struct PromptWidget {
+}
 
 pub struct Ui<'a> {
     terminal: DefaultTerminal,
     app: &'a RefCell<App>,
 }
+
 
 impl<'a> Ui<'a> {
     pub fn new(terminal: DefaultTerminal, app: &'a RefCell<App>) -> Ui<'a> {
@@ -32,89 +52,68 @@ impl<'a> Ui<'a> {
     }
 
     pub fn draw_app(&mut self) {
-        match self.app.borrow().mode {
-            Mode::Exit => self.draw_exit_popup(),
-            _ => self.draw_editor(),
-        }
-    }
+        let editor_widget = EditorWidget {
+            title: Title::from(Line::from(self.app.borrow().editor.file.to_string().bold().blue())),
+            content: self.app.borrow().editor.buffer.clone(),
+        };
+        let prompt_widget = PromptWidget {};
 
-    fn draw_editor(&mut self) {
-        let title = Title::from(Line::from(self.app.borrow().editor.file.to_string().bold()));
-        let mode = &self.app.borrow().mode;
-
-        let instructions = Title::from(Line::from(vec![
-            "[Save ".into(),
-            "F1".blue().bold(),
-            " Exit ".into(),
-            "ESC".blue().bold(),
-            "]".into(),
-            format!("{}", mode).into(),
-        ]));
-
-        let block = Block::bordered()
-            .title(title.alignment(Alignment::Left))
-            .title(instructions.alignment(Alignment::Center).position(Position::Bottom))
-            .border_set(border::ROUNDED);
-
-        let content = self.app.borrow().editor.buffer.join("\n");
-
-        let paragraph = Paragraph::new(content)
-            .block(block);
+        self.set_cursor_style();
 
         self.terminal.draw(|f| {
-            f.render_widget(paragraph, f.area());
-            f.set_cursor_position(ratatui::layout::Position::new(
-                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos).unwrap()+1,
-                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line).unwrap()+1,
+            f.render_widget(editor_widget, f.area());
+            //f.render_widget(prompt_widget, chunks[1]);
+            f.set_cursor_position(Position::new(
+                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos
+                    +len_of_int(self.app.borrow().editor.buffer.len())+2).unwrap(),
+                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line+1).unwrap(),
             ));
         }).unwrap();
     }
 
-    pub fn draw_exit_popup(&mut self) {
-        let instructions = Title::from(Line::from(vec![
-            "[".into(),
-            "Y".blue().bold(),
-            "es ".into(),
-            "N".blue().bold(),
-            "o ".into(),
-            "S".blue().bold(),
-            "ave&quit]".into(),
-        ]));
+    fn set_cursor_style(&self) {
+        let cursor_style = match self.app.borrow().mode {
+            Mode::Normal => SetCursorStyle::SteadyBlock,
+            _ => SetCursorStyle::SteadyBar,
+        };
 
-        let exit_block = Block::bordered()
-            .title(instructions.alignment(Alignment::Center).position(Position::Bottom))
-            .border_set(border::ROUNDED);
-
-
-        let paragraph = Paragraph::new("Exit without saving?")
-            .block(exit_block)
-            .alignment(Alignment::Center);
-
-        self.terminal.draw(|f| {
-            let area = centered_rect(13, 5, f.area());
-            f.render_widget(paragraph, area)
-        });
+        execute!(
+            stdout(),
+            cursor_style,
+        ).unwrap();
     }
 }
 
-fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    // Cut the given rectangle into three vertical pieces
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100 - percent_y) / 2),
-        ])
-        .split(r);
+impl Widget for EditorWidget<'_> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let block = Block::bordered()
+            .title(self.title.alignment(Alignment::Left))
+            .border_set(border::ROUNDED);
 
-    // Then cut the middle vertical piece into three width-wise pieces
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage((100 - percent_x) / 2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100 - percent_x) / 2),
-        ])
-        .split(popup_layout[1])[1] // Return the middle chunk
+        let mut content = String::new();
+
+        for (i, item) in self.content.iter().enumerate() {
+            let space_number = len_of_int(self.content.len()) - len_of_int(i+1);
+            content.push_str(format!("{}{} {}\n", " ".repeat(space_number), i+1, item).as_str())
+        }
+
+        Paragraph::new(content)
+            .block(block)
+            .render(area, buf);
+    }
+}
+
+impl Widget for PromptWidget {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let block = Block::bordered()
+            .border_set(border::ROUNDED);
+
+        Paragraph::new(":")
+            .block(block)
+            .render(area, buf)
+    }
+}
+
+fn len_of_int(n: usize) -> usize {
+    n.to_string().len()
 }
