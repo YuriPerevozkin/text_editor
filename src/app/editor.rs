@@ -74,8 +74,8 @@ impl Editor {
         self.cursor.pos = self.buffer[self.cursor.line].len();
     }
 
-    pub fn insert_char(&mut self, char: &str) {
-        self.buffer[self.cursor.line].insert_str(self.cursor.pos, char);
+    pub fn insert_char(&mut self, char: char) {
+        self.buffer[self.cursor.line].insert(self.cursor.pos, char);
         self.move_cursor_right(1)
     }
 
@@ -93,6 +93,7 @@ impl Editor {
         let deleted_line = self.buffer.remove(self.cursor.line);
         self.move_cursor_up(1);
         self.move_cursor_to_end();
+        self.cache_cursor();
         self.buffer[self.cursor.line] += &deleted_line;
     }
 
@@ -102,8 +103,8 @@ impl Editor {
         let second_line = splited.1.to_string();
 
         self.buffer[self.cursor.line] = first_line;
+        self.buffer.insert(self.cursor.line+1, second_line);
         self.move_cursor_down(1);
-        self.buffer.insert(self.cursor.line, second_line);
         self.move_cursor_to_start();
     }
 
