@@ -6,21 +6,11 @@ use crossterm::{
     cursor::SetCursorStyle,
 };
 use ratatui::{
-    prelude::*,
-    text::Line,
-    style::Stylize,
-    DefaultTerminal,
-    symbols::border,
     layout::{
-        Alignment,
-        Position
-    },
-    widgets::{
-        Block,
-        Widget,
-        Paragraph,
-        block::Title,
-    },
+        Alignment, Flex, Position
+    }, prelude::*, style::Stylize, symbols::border, text::Line, widgets::{
+        block::Title, Block, Paragraph, Widget
+    }, DefaultTerminal
 };
 
 use crate::app::{
@@ -34,7 +24,8 @@ struct EditorWidget<'a> {
     content: Vec<String>,
 }
 
-struct PromptWidget {
+struct CommandLineWidget {
+    content: String
 }
 
 pub struct Ui<'a> {
@@ -56,25 +47,28 @@ impl<'a> Ui<'a> {
             title: Title::from(Line::from(self.app.borrow().editor.file.to_string().bold().blue())),
             content: self.app.borrow().editor.buffer.clone(),
         };
-        let prompt_widget = PromptWidget {};
+        let command_line_widget = CommandLineWidget {
+            content: self.app.borrow().command_line.clone()
+        };
 
         self.set_cursor_style();
 
         self.terminal.draw(|f| {
             f.render_widget(editor_widget, f.area());
-            //f.render_widget(prompt_widget, chunks[1]);
             f.set_cursor_position(Position::new(
-                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos
-                    +len_of_int(self.app.borrow().editor.buffer.len())+2).unwrap(),
-                <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line+1).unwrap(),
+                    <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos
+                        +len_of_int(self.app.borrow().editor.buffer.len())+2).unwrap(),
+                        <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line+1).unwrap(),
             ));
+            if self.app.borrow().mode == Mode::Command {
+                f.render_widget(command_line_widget, f.area());
+            }
         }).unwrap();
     }
 
     fn set_cursor_style(&self) {
         let cursor_style = match self.app.borrow().mode {
-            Mode::Normal => SetCursorStyle::SteadyBlock,
-            _ => SetCursorStyle::SteadyBar,
+            Mode::Normal => SetCursorStyle::SteadyBlock, _ => SetCursorStyle::SteadyBar,
         };
 
         execute!(
@@ -103,12 +97,16 @@ impl Widget for EditorWidget<'_> {
     }
 }
 
-impl Widget for PromptWidget {
+impl Widget for CommandLineWidget {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let block = Block::bordered()
             .border_set(border::ROUNDED);
 
-        Paragraph::new(":")
+        let [area] = Layout::vertical([Constraint::Length(3)])
+            .flex(Flex::End)
+            .areas(area);
+
+        Paragraph::new(format!(":{}",self.content))
             .block(block)
             .render(area, buf)
     }
