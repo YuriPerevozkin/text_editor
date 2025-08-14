@@ -1,8 +1,6 @@
 mod ui;
 mod app;
 
-use std::cell::RefCell;
-
 use clap::Parser;
 
 
@@ -19,13 +17,7 @@ fn main() {
 
     let terminal = ratatui::init();
 
-    let app = RefCell::new(app::App::new(args.file));
-    let mut ui = ui::Ui::new(terminal, &app);
-
-    while app.borrow().alive {
-        ui.draw_app();
-        let _ = app.borrow_mut().handle_events();
-    }
+    app::App::new(terminal, args.file).run();
 
     ratatui::restore();
 }

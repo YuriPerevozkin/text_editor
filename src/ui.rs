@@ -1,6 +1,9 @@
-use std::cell::RefCell;
 use std::io::stdout;
 
+use crate::app::{
+    App,
+    Mode
+};
 use crossterm::{
     execute,
     cursor::SetCursorStyle,
@@ -10,12 +13,7 @@ use ratatui::{
         Alignment, Flex, Position
     }, prelude::*, style::Stylize, symbols::border, text::Line, widgets::{
         block::Title, Block, Paragraph, Widget
-    }, DefaultTerminal
-};
-
-use crate::app::{
-    App,
-    Mode
+    },
 };
 
 
@@ -28,54 +26,38 @@ struct CommandLineWidget {
     content: String
 }
 
-pub struct Ui<'a> {
-    terminal: DefaultTerminal,
-    app: &'a RefCell<App>,
+pub fn draw_app(app: &mut App) {
+    let editor_widget = EditorWidget {
+        title: Title::from(Line::from(app.editor.file.to_string().bold().blue())),
+        content: app.editor.buffer.clone(),
+    };
+    set_cursor_style(app);
+
+    app.terminal.draw(|f| {
+        f.render_widget(editor_widget, f.area());
+        f.set_cursor_position(Position::new(
+                <usize as TryInto<u16>>::try_into(app.editor.cursor.pos
+                    +len_of_int(app.editor.buffer.len())+2).unwrap(),
+                    <usize as TryInto<u16>>::try_into(app.editor.cursor.line+1).unwrap(),
+        ));
+        if app.mode == Mode::Command {
+            let command_line_widget = CommandLineWidget {
+                content: app.cmd_buffer.clone()
+            };
+            f.render_widget(command_line_widget, f.area());
+        }
+    }).unwrap();
 }
 
+fn set_cursor_style(app: &mut App) {
+    let cursor_style = match app.mode {
+        Mode::Normal => SetCursorStyle::SteadyBlock, _ => SetCursorStyle::SteadyBar,
+    };
 
-impl<'a> Ui<'a> {
-    pub fn new(terminal: DefaultTerminal, app: &'a RefCell<App>) -> Ui<'a> {
-        Ui {
-            terminal,
-            app
-        }
-    }
-
-    pub fn draw_app(&mut self) {
-        let editor_widget = EditorWidget {
-            title: Title::from(Line::from(self.app.borrow().editor.file.to_string().bold().blue())),
-            content: self.app.borrow().editor.buffer.clone(),
-        };
-        let command_line_widget = CommandLineWidget {
-            content: self.app.borrow().command_line.clone()
-        };
-
-        self.set_cursor_style();
-
-        self.terminal.draw(|f| {
-            f.render_widget(editor_widget, f.area());
-            f.set_cursor_position(Position::new(
-                    <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.pos
-                        +len_of_int(self.app.borrow().editor.buffer.len())+2).unwrap(),
-                        <usize as TryInto<u16>>::try_into(self.app.borrow().editor.cursor.line+1).unwrap(),
-            ));
-            if self.app.borrow().mode == Mode::Command {
-                f.render_widget(command_line_widget, f.area());
-            }
-        }).unwrap();
-    }
-
-    fn set_cursor_style(&self) {
-        let cursor_style = match self.app.borrow().mode {
-            Mode::Normal => SetCursorStyle::SteadyBlock, _ => SetCursorStyle::SteadyBar,
-        };
-
-        execute!(
-            stdout(),
-            cursor_style,
-        ).unwrap();
-    }
+    execute!(
+        stdout(),
+        cursor_style,
+    ).unwrap();
 }
 
 impl Widget for EditorWidget<'_> {

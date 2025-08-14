@@ -60,7 +60,7 @@ impl Editor {
             self.cursor.pos = self.cursor_cache;
 
             if self.cursor.pos > self.buffer[self.cursor.line].len() {
-                self.move_cursor_to_end()
+                self.move_cursor_to_end();
             }
         }
     }
@@ -72,6 +72,9 @@ impl Editor {
 
     pub fn move_cursor_to_end(&mut self) {
         self.cursor.pos = self.buffer[self.cursor.line].len();
+        if self.cursor_cache < self.cursor.pos {
+            self.cache_cursor();
+        }
     }
 
     pub fn insert_char(&mut self, char: char) {
