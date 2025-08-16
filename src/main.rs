@@ -1,8 +1,7 @@
-mod ui;
 mod app;
+mod ui;
 
 use clap::Parser;
-
 
 #[derive(Parser)]
 #[command(name = "Text editor")]

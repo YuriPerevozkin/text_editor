@@ -1,7 +1,6 @@
 use std::fs;
 use std::io::ErrorKind;
 
-
 #[derive(Default)]
 pub struct Cursor {
     pub line: usize,
@@ -21,8 +20,8 @@ impl Editor {
             Ok(buffer) => buffer.lines().map(str::to_string).collect(),
             Err(error) => match error.kind() {
                 ErrorKind::NotFound => vec![String::new()],
-                _ => panic!("Could not open a file")
-            }
+                _ => panic!("Could not open a file"),
+            },
         };
 
         Self {
@@ -60,7 +59,7 @@ impl Editor {
     }
 
     pub fn move_cursor_down(&mut self, n: usize) {
-        if self.cursor.line != self.buffer.len()-1 {
+        if self.cursor.line != self.buffer.len() - 1 {
             self.cursor.line += n;
 
             self.cursor.pos = self.cursor_cache;
@@ -102,8 +101,7 @@ impl Editor {
         if self.cursor.pos > 0 {
             self.buffer[self.cursor.line].remove(self.cursor.pos - 1);
             self.move_cursor_left(1)
-        }
-        else if self.cursor.line > 0 {
+        } else if self.cursor.line > 0 {
             self.join_lines()
         }
     }
@@ -129,7 +127,7 @@ impl Editor {
         let second_line = splited.1.to_string();
 
         self.buffer[self.cursor.line] = first_line;
-        self.buffer.insert(self.cursor.line+1, second_line);
+        self.buffer.insert(self.cursor.line + 1, second_line);
         self.move_cursor_down(1);
         self.move_cursor_to_start();
     }
@@ -140,5 +138,5 @@ impl Editor {
 }
 
 #[cfg(test)]
-#[path ="editor_tests.rs"]
+#[path = "editor_tests.rs"]
 mod tests;

@@ -1,22 +1,17 @@
-use crate::app::{App, Mode};
 use crate::app::cmd_line;
+use crate::app::{App, Mode};
 
-use crossterm::event::{
-    KeyCode,
-    KeyEvent,
-};
+use crossterm::event::{KeyCode, KeyEvent};
 
 pub fn handle_command(app: &mut App, key_event: KeyEvent) {
     match app.mode {
-        Mode::Insert => {
-            match key_event.code {
-                KeyCode::Enter => app.editor.split_line(),
-                KeyCode::Backspace => app.editor.delete_char(),
-                KeyCode::Char(char) => app.editor.insert_char(char),
-                KeyCode::Esc => app.switch_mode(Mode::Normal),
-                _ => {}
-            }
-        }
+        Mode::Insert => match key_event.code {
+            KeyCode::Enter => app.editor.split_line(),
+            KeyCode::Backspace => app.editor.delete_char(),
+            KeyCode::Char(char) => app.editor.insert_char(char),
+            KeyCode::Esc => app.switch_mode(Mode::Normal),
+            _ => {}
+        },
 
         Mode::Normal => {
             if let KeyCode::Char(char) = key_event.code {
@@ -81,14 +76,12 @@ pub fn handle_command(app: &mut App, key_event: KeyEvent) {
             app.cmd_buffer.clear();
         }
 
-        Mode::Command => {
-            match key_event.code {
-                KeyCode::Char(char) => app.cmd_buffer.push(char),
-                KeyCode::Backspace => _ = app.cmd_buffer.pop(),
-                KeyCode::Enter => cmd_line::execute(app),
-                KeyCode::Esc => app.switch_mode(Mode::Normal),
-                _ => {}
-            }
-        }
+        Mode::Command => match key_event.code {
+            KeyCode::Char(char) => app.cmd_buffer.push(char),
+            KeyCode::Backspace => _ = app.cmd_buffer.pop(),
+            KeyCode::Enter => cmd_line::execute(app),
+            KeyCode::Esc => app.switch_mode(Mode::Normal),
+            _ => {}
+        },
     }
 }

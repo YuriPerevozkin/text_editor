@@ -11,7 +11,6 @@ fn move_cursor_right() {
     editor.cursor.pos = 4;
     editor.move_cursor_right(1);
     assert_eq!(editor.cursor.pos, 4);
-
 }
 
 #[test]
@@ -50,7 +49,7 @@ fn move_cursor_up() {
 #[test]
 fn move_cursor_down() {
     let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
-    
+
     editor.move_cursor_down(1);
     assert_eq!(editor.cursor.line, 1);
 

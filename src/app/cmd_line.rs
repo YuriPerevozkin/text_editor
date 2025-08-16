@@ -1,5 +1,5 @@
-use std::fs;
 use crate::app::{App, Mode};
+use std::fs;
 
 pub fn execute(app: &mut App) {
     match app.cmd_buffer.as_str() {
@@ -19,6 +19,5 @@ fn quit(app: &mut App) {
 }
 
 fn write(app: &mut App) {
-    fs::write(&app.editor.file, app.editor.buffer.join("\n")+"\n")
-        .expect("Coud not save file");
+    fs::write(&app.editor.file, app.editor.buffer.join("\n") + "\n").expect("Coud not save file");
 }

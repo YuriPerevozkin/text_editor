@@ -1,17 +1,12 @@
-mod editor;
 mod cmd_handler;
 mod cmd_line;
+mod editor;
 
 use crate::ui;
 
 use ratatui::DefaultTerminal;
 
-use crossterm::event::{
-    self,
-    Event,
-    KeyEventKind,
-};
-
+use crossterm::event::{self, Event, KeyEventKind};
 
 #[derive(Debug, PartialEq)]
 pub enum Mode {
@@ -33,7 +28,7 @@ impl std::fmt::Display for Mode {
         match *self {
             Mode::Normal => write!(f, "NORMAL"),
             Mode::Insert => write!(f, "INSERT"),
-            Mode::Command => write!(f, "COMMAND")
+            Mode::Command => write!(f, "COMMAND"),
         }
     }
 }
