@@ -19,45 +19,66 @@ pub fn handle_command(app: &mut App, key_event: KeyEvent) {
         }
 
         Mode::Normal => {
-            match key_event.code {
-                KeyCode::Char('h') => app.editor.move_cursor_left(1),
-                KeyCode::Char('j') => app.editor.move_cursor_down(1),
-                KeyCode::Char('k') => app.editor.move_cursor_up(1),
-                KeyCode::Char('l') => app.editor.move_cursor_right(1),
+            if let KeyCode::Char(char) = key_event.code {
+                app.cmd_buffer.push(char)
+            }
+            match app.cmd_buffer.as_str() {
+                // --- Navigation ---
+                "h" => app.editor.move_cursor_left(1),
+                "j" => app.editor.move_cursor_down(1),
+                "k" => app.editor.move_cursor_up(1),
+                "l" => app.editor.move_cursor_right(1),
 
-                KeyCode::Char('0') => app.editor.move_cursor_to_start(),
-                KeyCode::Char('$') => app.editor.move_cursor_to_end(),
+                "0" => app.editor.move_cursor_to_start(),
+                "$" => app.editor.move_cursor_to_end(),
 
-                KeyCode::Char('i') => app.switch_mode(Mode::Insert),
-                KeyCode::Char('I') => {
+                "G" => app.editor.move_cursor_to_end_of_file(),
+                "g" => return,
+                "gg" => app.editor.move_cursor_to_start_of_file(),
+
+                // --- Enter insert mode ---
+                "i" => app.switch_mode(Mode::Insert),
+                "I" => {
                     app.editor.move_cursor_to_start();
                     app.switch_mode(Mode::Insert)
                 }
 
-                KeyCode::Char('a') => {
+                "a" => {
                     app.editor.move_cursor_right(1);
                     app.switch_mode(Mode::Insert);
                 }
-                KeyCode::Char('A') => {
+                "A" => {
                     app.editor.move_cursor_to_end();
                     app.switch_mode(Mode::Insert);
                 }
 
-                KeyCode::Char('o') => {
+                "o" => {
                     app.editor.move_cursor_to_end();
                     app.editor.split_line();
                     app.switch_mode(Mode::Insert);
                 }
-                KeyCode::Char('O') => {
+                "O" => {
                     app.editor.move_cursor_up(1);
                     app.editor.move_cursor_to_end();
                     app.editor.split_line();
                     app.switch_mode(Mode::Insert);
                 }
 
-                KeyCode::Char(':') => app.switch_mode(Mode::Command),
+                "s" => {
+                    app.editor.move_cursor_right(1);
+                    app.editor.delete_char();
+                    app.switch_mode(Mode::Insert);
+                }
+
+                // --- Editing ---
+                "d" => return,
+                "dd" => app.editor.delete_line(),
+
+                // --- Misc ---
+                ":" => app.switch_mode(Mode::Command),
                 _ => {}
             }
+            app.cmd_buffer.clear();
         }
 
         Mode::Command => {

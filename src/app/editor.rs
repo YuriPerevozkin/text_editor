@@ -83,6 +83,16 @@ impl Editor {
         }
     }
 
+    pub fn move_cursor_to_end_of_file(&mut self) {
+        self.cursor.line = self.buffer.len() - 1;
+        self.move_cursor_to_start();
+    }
+
+    pub fn move_cursor_to_start_of_file(&mut self) {
+        self.cursor.line = 0;
+        self.move_cursor_to_start();
+    }
+
     pub fn insert_char(&mut self, char: char) {
         self.buffer[self.cursor.line].insert(self.cursor.pos, char);
         self.move_cursor_right(1)
@@ -90,11 +100,18 @@ impl Editor {
 
     pub fn delete_char(&mut self) {
         if self.cursor.pos > 0 {
-            self.buffer[self.cursor.line].remove(self.cursor.pos-1);
+            self.buffer[self.cursor.line].remove(self.cursor.pos - 1);
             self.move_cursor_left(1)
         }
         else if self.cursor.line > 0 {
             self.join_lines()
+        }
+    }
+
+    pub fn delete_line(&mut self) {
+        self.buffer.remove(self.cursor.line);
+        if self.cursor.pos > self.buffer[self.cursor.line].len() {
+            self.move_cursor_to_end();
         }
     }
 
