@@ -138,3 +138,7 @@ impl Editor {
         self.cursor_cache = self.cursor.pos
     }
 }
+
+#[cfg(test)]
+#[path ="editor_tests.rs"]
+mod tests;

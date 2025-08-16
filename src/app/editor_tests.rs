@@ -1,9 +1,8 @@
-use text_editor::app::editor::Editor;
-
+use super::Editor;
 
 #[test]
 fn move_cursor_right() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.move_cursor_right(1);
     assert_eq!(editor.cursor.pos, 1);
@@ -17,7 +16,7 @@ fn move_cursor_right() {
 
 #[test]
 fn move_cursor_left() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.move_cursor_left(1);
     assert_eq!(editor.cursor.pos, 0);
@@ -31,7 +30,7 @@ fn move_cursor_left() {
 
 #[test]
 fn move_cursor_up() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.move_cursor_up(1);
     assert_eq!(editor.cursor.line, 0);
@@ -50,7 +49,7 @@ fn move_cursor_up() {
 
 #[test]
 fn move_cursor_down() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
     
     editor.move_cursor_down(1);
     assert_eq!(editor.cursor.line, 1);
@@ -69,7 +68,7 @@ fn move_cursor_down() {
 
 #[test]
 fn move_cursor_to_start() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.cursor.pos = 3;
     editor.move_cursor_to_start();
@@ -83,7 +82,7 @@ fn move_cursor_to_start() {
 
 #[test]
 fn move_cursor_to_end() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.move_cursor_to_end();
     assert_eq!(editor.cursor.pos, 4);
@@ -94,7 +93,7 @@ fn move_cursor_to_end() {
 
 #[test]
 fn delete_char() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.cursor.pos = 2;
 
@@ -107,18 +106,18 @@ fn delete_char() {
 
 #[test]
 fn insert_char() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
-    editor.insert_char(" ");
+    editor.insert_char(' ');
     assert_eq!(editor.buffer[editor.cursor.line], " test");
 
-    editor.insert_char("1");
+    editor.insert_char('1');
     assert_eq!(editor.buffer[editor.cursor.line], " 1test");
 }
 
 #[test]
 fn join_lines() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.delete_char();
     assert_eq!(editor.buffer[editor.cursor.line], "test");
@@ -131,7 +130,7 @@ fn join_lines() {
 
 #[test]
 fn split_line() {
-    let mut editor = Editor::new("tests/test".to_string()).unwrap();
+    let mut editor = Editor::new("tests/test_DO_NOT_EDIT".to_string());
 
     editor.cursor.pos = 2;
     editor.split_line();
