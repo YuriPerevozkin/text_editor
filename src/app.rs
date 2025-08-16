@@ -39,11 +39,10 @@ impl std::fmt::Display for Mode {
 }
 
 impl App {
-    pub fn new(terminal: DefaultTerminal, file: String) -> App {
-        // TODO: add some error handling
-        let editor = editor::Editor::new(file).unwrap();
+    pub fn new(terminal: DefaultTerminal, file: String) -> Self {
+        let editor = editor::Editor::new(file);
 
-        App {
+        Self {
             mode: Mode::Normal,
             alive: true,
             terminal,

@@ -1,5 +1,5 @@
 use std::fs;
-use std::io::Error;
+use std::io::ErrorKind;
 
 
 #[derive(Default)]
@@ -16,15 +16,21 @@ pub struct Editor {
 }
 
 impl Editor {
-    pub fn new(file: String) -> Result<Editor, Error> {
-        let buffer = fs::read_to_string(&file)?.lines().map(str::to_string).collect();
+    pub fn new(file: String) -> Self {
+        let buffer = match fs::read_to_string(&file) {
+            Ok(buffer) => buffer.lines().map(str::to_string).collect(),
+            Err(error) => match error.kind() {
+                ErrorKind::NotFound => vec![String::new()],
+                _ => panic!("Could not open a file")
+            }
+        };
 
-        Ok(Editor {
+        Self {
             file,
             buffer,
             cursor: Cursor::default(),
             cursor_cache: 0,
-        })
+        }
     }
 
     pub fn move_cursor_right(&mut self, n: usize) {
@@ -113,9 +119,5 @@ impl Editor {
 
     pub fn cache_cursor(&mut self) {
         self.cursor_cache = self.cursor.pos
-    }
-
-    pub fn save_file(&self) -> Result<(), Error> {
-        fs::write(&self.file, self.buffer.join("\n")+"\n")
     }
 }
